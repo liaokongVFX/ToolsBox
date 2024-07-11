@@ -1,5 +1,10 @@
 package com.lk.toolsbox.window;
 
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.MessageDialogBuilder;
@@ -13,6 +18,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class AddToolDialog extends DialogWrapper {
+    private JPanel contentPanel;
     protected JTextField nameField;
     protected JTextField contentField;
     protected JComboBox<String> comboBox;
@@ -27,7 +33,7 @@ public class AddToolDialog extends DialogWrapper {
     @NotNull
     @Override
     protected JComponent createCenterPanel() {
-        JPanel panel = new JPanel(new GridBagLayout());
+        contentPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 10, 5, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -45,13 +51,13 @@ public class AddToolDialog extends DialogWrapper {
         // 添加 "名称" 标签
         gbc.gridx = 0;
         gbc.gridy = 0;
-        panel.add(new JLabel("名称:"), gbc);
+        contentPanel.add(new JLabel("名称:"), gbc);
 
         // 添加 "名称" 文本框
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0; // 使文本框宽度自适应
-        panel.add(nameField, gbc);
+        contentPanel.add(nameField, gbc);
 
         // 重置 weightx
         gbc.weightx = 0;
@@ -59,13 +65,13 @@ public class AddToolDialog extends DialogWrapper {
         // 添加 "内容" 标签
         gbc.gridx = 0;
         gbc.gridy = 1;
-        panel.add(new JLabel("内容:"), gbc);
+        contentPanel.add(new JLabel("内容:"), gbc);
 
         // 添加 "内容" 文本框
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.weightx = 1.0; // 使文本框宽度自适应
-        panel.add(contentField, gbc);
+        contentPanel.add(contentField, gbc);
 
         // 重置 weightx
         gbc.weightx = 0;
@@ -73,15 +79,15 @@ public class AddToolDialog extends DialogWrapper {
         // 添加 "类型" 标签
         gbc.gridx = 0;
         gbc.gridy = 2;
-        panel.add(new JLabel("类型:"), gbc);
+        contentPanel.add(new JLabel("类型:"), gbc);
 
         // 添加 "类型" 下拉框
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.weightx = 1.0; // 使下拉框宽度自适应
-        panel.add(comboBox, gbc);
+        contentPanel.add(comboBox, gbc);
 
-        return panel;
+        return contentPanel;
     }
 
     @Override
@@ -95,15 +101,32 @@ public class AddToolDialog extends DialogWrapper {
             String type = (String) comboBox.getSelectedItem();
 
             if (name.isEmpty() || content.isEmpty()) {
-                MessageDialogBuilder.yesNo("提示", "请输入完整信息").show();
+                JOptionPane.showMessageDialog(contentPanel,"请输入完整信息");
                 return;
             }
 
             try {
                 LinkedList<ToolData> toolDataList = FilePersistence.loadData();
+                for(ToolData data : toolDataList) {
+                    if(data.getName().equals(name)) {
+                        JOptionPane.showMessageDialog(contentPanel,"工具名称已存在");
+                        return;
+                    }
+                }
+
                 toolDataList.add(new ToolData(name, content, type));
                 FilePersistence.saveData(toolDataList);
-                // 使用action 提醒用户添加成功
+
+                // 创建一个通知
+                Project project = ProjectManager.getInstance().getOpenProjects()[0];
+                Notification notification = new Notification(
+                        "toolsbox_notification_group",
+                        "提示", // 通知标题
+                        "工具添加成功！", // 通知内容
+                        NotificationType.INFORMATION // 通知类型
+                );
+                Notifications.Bus.notify(notification, project);
+
 
                 close(0);
             } catch (IOException ex) {

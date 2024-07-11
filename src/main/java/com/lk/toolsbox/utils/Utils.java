@@ -1,8 +1,8 @@
 package com.lk.toolsbox.utils;
 
-import com.intellij.openapi.application.PathManager;
-
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 
 public class Utils {
@@ -22,6 +22,28 @@ public class Utils {
             }
         } catch (Exception exception) {
             exception.printStackTrace();
+        }
+    }
+
+    public static void openEXE(String path) {
+        try {
+            Runtime.getRuntime().exec(path);
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    public static void openDir(String folderPath) {
+        File folder = new File(folderPath);
+        if (Desktop.isDesktopSupported()) {
+            Desktop desktop = Desktop.getDesktop();
+            try {
+                desktop.open(folder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Desktop功能在当前平台上不受支持。");
         }
     }
 }
