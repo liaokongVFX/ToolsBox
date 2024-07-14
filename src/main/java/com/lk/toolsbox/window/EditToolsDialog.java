@@ -1,6 +1,7 @@
 package com.lk.toolsbox.window;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBScrollPane;
@@ -62,7 +63,12 @@ public class EditToolsDialog extends DialogWrapper {
         JScrollPane scrollPane = new JBScrollPane(infoTable);
 
         contentPanel = new JPanel(new BorderLayout());
+
+        // fixme: 临时
+        JLabel pathLabel = new JLabel(PathManager.getConfigPath() + "/ToolsBoxPresets.json");
+
         contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(pathLabel,BorderLayout.SOUTH);
         return contentPanel;
     }
 
