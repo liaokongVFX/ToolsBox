@@ -8,7 +8,7 @@
     <name>ToolsBox</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
+    <vendor email="xhwz216@gmail.com" url="https://vfxer.me">LiaoKong</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
@@ -26,6 +26,6 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.lk.toolsbox.window.ToolsBoxFactory"
-                    id="ToolsBoxWindow" anchor="right" icon="AllIcons.General.Note" />
+                    id="工具箱" anchor="right" icon="AllIcons.Toolwindows.ToolWindowPalette" />
     </extensions>
 </idea-plugin>

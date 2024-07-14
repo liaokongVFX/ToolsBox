@@ -1,14 +1,10 @@
 package com.lk.toolsbox.window;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.MessageDialogBuilder;
 import com.lk.toolsbox.data.ToolData;
+import com.lk.toolsbox.data.ToolsBoxData;
+import com.lk.toolsbox.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import com.lk.toolsbox.utils.FilePersistence;
 
@@ -45,8 +41,7 @@ public class AddToolDialog extends DialogWrapper {
         contentField = new JTextField();
         contentField.setToolTipText("请输入内容");
 
-        String[] options = {"网址", "可执行程序", "文件夹", "cmd命令"};
-        comboBox = new ComboBox<>(options);
+        comboBox = new ComboBox<>(ToolData.getOptions());
 
         // 添加 "名称" 标签
         gbc.gridx = 0;
@@ -106,7 +101,12 @@ public class AddToolDialog extends DialogWrapper {
             }
 
             try {
-                LinkedList<ToolData> toolDataList = FilePersistence.loadData();
+                ToolsBoxData toolsBoxData = FilePersistence.loadData();
+                if(toolsBoxData == null){
+                    toolsBoxData = new ToolsBoxData("", new LinkedList<ToolData>());
+                }
+
+                LinkedList<ToolData> toolDataList = toolsBoxData.getTools();
                 for(ToolData data : toolDataList) {
                     if(data.getName().equals(name)) {
                         JOptionPane.showMessageDialog(contentPanel,"工具名称已存在");
@@ -114,20 +114,10 @@ public class AddToolDialog extends DialogWrapper {
                     }
                 }
 
-                toolDataList.add(new ToolData(name, content, type));
-                FilePersistence.saveData(toolDataList);
+                toolsBoxData.addTool(new ToolData(name, content, type));
+                FilePersistence.saveData(toolsBoxData);
 
-                // 创建一个通知
-                Project project = ProjectManager.getInstance().getOpenProjects()[0];
-                Notification notification = new Notification(
-                        "toolsbox_notification_group",
-                        "提示", // 通知标题
-                        "工具添加成功！", // 通知内容
-                        NotificationType.INFORMATION // 通知类型
-                );
-                Notifications.Bus.notify(notification, project);
-
-
+                Utils.showNotification("工具添加成功");
                 close(0);
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
