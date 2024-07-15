@@ -94,7 +94,7 @@ public class ToolsBoxWindow {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadTools();
-                Utils.showNotification("工具成功！");
+                Utils.showNotification("工具刷新成功！");
             }
         });
         editButton.addActionListener(new ActionListener() {
