@@ -223,7 +223,7 @@ public class EditToolsDialog extends DialogWrapper {
 
             toolsBoxData.setTools(data);
             FilePersistence.saveData(toolsBoxData);
-            Utils.showNotification("保存成功");
+            Utils.showNotification("保存成功！");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
