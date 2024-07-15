@@ -9,6 +9,7 @@ import com.intellij.ui.table.JBTable;
 import com.lk.toolsbox.data.ToolData;
 import com.lk.toolsbox.data.ToolsBoxData;
 import com.lk.toolsbox.utils.FilePersistence;
+import com.lk.toolsbox.utils.Utils;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -24,7 +25,8 @@ import java.util.LinkedList;
 
 public class EditToolsDialog extends DialogWrapper {
     private JPanel contentPanel;
-    protected JBTable infoTable;
+    protected static JBTable infoTable;
+    private static DefaultTableModel defaultTableModel;
 
     protected EditToolsDialog() {
         super(true);
@@ -36,7 +38,7 @@ public class EditToolsDialog extends DialogWrapper {
     @Override
     protected JComponent createCenterPanel() {
         infoTable = new JBTable();
-        DefaultTableModel defaultTableModel = new DefaultTableModel(null, new String[]{"名称", "内容", "类型", "操作"});
+        defaultTableModel = new DefaultTableModel(null, new String[]{"名称", "内容", "类型", "操作"});
         infoTable.setModel(defaultTableModel);
         infoTable.setEnabled(true);
         setTableColumnWidths(new int[]{100, 500, 80, 120});
@@ -68,7 +70,7 @@ public class EditToolsDialog extends DialogWrapper {
         JLabel pathLabel = new JLabel(PathManager.getConfigPath() + "/ToolsBoxPresets.json");
 
         contentPanel.add(scrollPane, BorderLayout.CENTER);
-        contentPanel.add(pathLabel,BorderLayout.SOUTH);
+        contentPanel.add(pathLabel, BorderLayout.SOUTH);
         return contentPanel;
     }
 
@@ -128,6 +130,7 @@ public class EditToolsDialog extends DialogWrapper {
         private JButton upButton;
         private JButton downButton;
         private JButton deleteButton;
+        private int currentRow;
 
         public ButtonEditor(JCheckBox checkBox) {
             panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
@@ -143,7 +146,13 @@ public class EditToolsDialog extends DialogWrapper {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     fireEditingStopped();
-                    System.out.println("up按钮1点击");
+                    if (currentRow > 0) {
+                        defaultTableModel.moveRow(currentRow, currentRow, currentRow - 1);
+                        infoTable.setRowSelectionInterval(currentRow - 1, currentRow - 1);
+                    } else {
+                        defaultTableModel.moveRow(currentRow, currentRow, defaultTableModel.getRowCount() - 1);
+                        infoTable.setRowSelectionInterval(defaultTableModel.getRowCount() - 1, defaultTableModel.getRowCount() - 1);
+                    }
                 }
             });
 
@@ -151,7 +160,24 @@ public class EditToolsDialog extends DialogWrapper {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     fireEditingStopped();
-                    System.out.println("down按钮2点击");
+                    if (currentRow < defaultTableModel.getRowCount() - 1) {
+                        defaultTableModel.moveRow(currentRow, currentRow, currentRow + 1);
+                        infoTable.setRowSelectionInterval(currentRow + 1, currentRow + 1);
+                    } else {
+                        defaultTableModel.moveRow(currentRow, currentRow, 0);
+                        infoTable.setRowSelectionInterval(0, 0);
+                    }
+                }
+            });
+
+            deleteButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    fireEditingStopped();
+                    defaultTableModel.removeRow(currentRow);
+                    if (infoTable.isEditing()) {
+                        infoTable.getCellEditor().stopCellEditing();
+                    }
                 }
             });
 
@@ -162,6 +188,7 @@ public class EditToolsDialog extends DialogWrapper {
 
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            currentRow = row;
             return panel;
         }
 
@@ -171,4 +198,36 @@ public class EditToolsDialog extends DialogWrapper {
         }
     }
 
+
+    public LinkedList<ToolData> getTableData() {
+        int rowCount = defaultTableModel.getRowCount();
+        LinkedList<ToolData> toolDataLinkedList = new LinkedList<>();
+
+        for (int i = 0; i < rowCount; i++) {
+            toolDataLinkedList.add(new ToolData(
+                (String) defaultTableModel.getValueAt(i, 0),
+                (String) defaultTableModel.getValueAt(i, 1),
+                (String) defaultTableModel.getValueAt(i, 2)
+            ));
+        }
+        return toolDataLinkedList;
+    }
+
+    protected void doOKAction() {
+        LinkedList<ToolData> data = getTableData();
+        try {
+            ToolsBoxData toolsBoxData = FilePersistence.loadData();
+            if (toolsBoxData == null) {
+                toolsBoxData = new ToolsBoxData("", new LinkedList<ToolData>());
+            }
+
+            toolsBoxData.setTools(data);
+            FilePersistence.saveData(toolsBoxData);
+            Utils.showNotification("保存成功");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        super.doOKAction();
+    }
 }
