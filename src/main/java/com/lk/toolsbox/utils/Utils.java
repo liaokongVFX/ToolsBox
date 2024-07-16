@@ -1,13 +1,11 @@
 package com.lk.toolsbox.utils;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.*;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
@@ -17,15 +15,24 @@ import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.UserDataHolder;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.terminal.JBTerminalWidget;
+import org.jetbrains.plugins.terminal.ShellTerminalWidget;
+import org.jetbrains.plugins.terminal.TerminalView;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Utils {
+    private static final String TERMINAL_KEY = "MY_CUSTOM_TERMINAL";
+
     public static void openUrl(String url) {
         try {
             // 检查系统是否支持Desktop类
@@ -67,7 +74,43 @@ public class Utils {
         }
     }
 
-    public static void openCmd(String command) {
+    private static ShellTerminalWidget findOrCreateTerminal(TerminalView terminalView, Project project) {
+        Set<JBTerminalWidget> terminals = terminalView.getWidgets();
+        for (JBTerminalWidget widget : terminals) {
+            if (widget instanceof ShellTerminalWidget) {
+                ShellTerminalWidget terminal = (ShellTerminalWidget) widget;
+                if ("My Terminal".equals(terminal.getName())) {
+                    return terminal;
+                }
+            }
+        }
+        // If no existing terminal named "My Terminal" is found, create a new one
+        return terminalView.createLocalShellWidget(project.getBasePath(), "ToolsBox Terminal");
+    }
+
+    public static void openCmd(String command){
+        Project project = ProjectManager.getInstance().getOpenProjects()[0];
+        if (project == null) return;
+
+        TerminalView terminalView = TerminalView.getInstance(project);
+        ToolWindow terminalToolWindow = ToolWindowManager.getInstance(project).getToolWindow("Terminal");
+
+        if (terminalToolWindow != null) {
+            terminalToolWindow.activate(null);
+
+            ShellTerminalWidget terminal = findOrCreateTerminal(terminalView, project);
+
+            if (terminal != null) {
+                try {
+                    terminal.executeCommand(command);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public static void _openCmd(String command) {
         try {
             Project project = ProjectManager.getInstance().getOpenProjects()[0];
 
@@ -98,7 +141,7 @@ public class Utils {
             consoleView.print("Executing command: " + String.join(" ", command) + "\n", ConsoleViewContentType.SYSTEM_OUTPUT);
 
             processHandler.startNotify();
-        } catch (ExecutionException ex) {
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
