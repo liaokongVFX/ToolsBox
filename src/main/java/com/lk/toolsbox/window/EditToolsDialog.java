@@ -21,7 +21,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 public class EditToolsDialog extends DialogWrapper {
     private JPanel contentPanel;
@@ -202,19 +204,32 @@ public class EditToolsDialog extends DialogWrapper {
     public LinkedList<ToolData> getTableData() {
         int rowCount = defaultTableModel.getRowCount();
         LinkedList<ToolData> toolDataLinkedList = new LinkedList<>();
+        Set<String> nameSet = new HashSet<>();
 
         for (int i = 0; i < rowCount; i++) {
+            String name = (String) defaultTableModel.getValueAt(i, 0);
+
+            if(!nameSet.add(name)){
+                JOptionPane.showMessageDialog(contentPanel,"工具名称出现重复，请先修改");
+                return null;
+            }
+
             toolDataLinkedList.add(new ToolData(
                 (String) defaultTableModel.getValueAt(i, 0),
                 (String) defaultTableModel.getValueAt(i, 1),
                 (String) defaultTableModel.getValueAt(i, 2)
             ));
+            nameSet.add(name);
         }
         return toolDataLinkedList;
     }
 
     protected void doOKAction() {
         LinkedList<ToolData> data = getTableData();
+        if(data == null){
+            return;
+        }
+
         try {
             ToolsBoxData toolsBoxData = FilePersistence.loadData();
             if (toolsBoxData == null) {
