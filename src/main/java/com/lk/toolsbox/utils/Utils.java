@@ -92,6 +92,7 @@ public class Utils {
         Project project = ProjectManager.getInstance().getOpenProjects()[0];
         if (project == null) return;
 
+        command = command.replace("$ProjectFileDir$", project.getBasePath());
         TerminalView terminalView = TerminalView.getInstance(project);
         ToolWindow terminalToolWindow = ToolWindowManager.getInstance(project).getToolWindow("Terminal");
 
