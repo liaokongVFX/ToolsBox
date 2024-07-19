@@ -117,7 +117,6 @@ public class AddToolDialog extends DialogWrapper {
                 toolsBoxData.addTool(new ToolData(name, content, type));
                 FilePersistence.saveData(toolsBoxData);
 
-                Utils.showNotification("工具添加成功");
                 close(0);
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());

@@ -88,10 +88,7 @@ public class Utils {
         return terminalView.createLocalShellWidget(project.getBasePath(), "ToolsBox Terminal");
     }
 
-    public static void openCmd(String command){
-        Project project = ProjectManager.getInstance().getOpenProjects()[0];
-        if (project == null) return;
-
+    public static void openCmd(String command, Project project){
         command = command.replace("$ProjectFileDir$", project.getBasePath());
         TerminalView terminalView = TerminalView.getInstance(project);
         ToolWindow terminalToolWindow = ToolWindowManager.getInstance(project).getToolWindow("Terminal");
@@ -111,10 +108,8 @@ public class Utils {
         }
     }
 
-    public static void _openCmd(String command) {
+    public static void _openCmd(String command, Project project) {
         try {
-            Project project = ProjectManager.getInstance().getOpenProjects()[0];
-
             command = command.replace("$ProjectFileDir$", project.getBasePath());
             System.out.println(command);
 
@@ -147,8 +142,7 @@ public class Utils {
         }
     }
 
-    public static void showNotification(String message, NotificationType messageType, int timeout){
-        Project project = ProjectManager.getInstance().getOpenProjects()[0];
+    public static void showNotification(Project project, String message, NotificationType messageType, int timeout){
         Notification notification = new Notification(
                 "toolsBoxNotificationGroup",
                 "提示", // 通知标题
@@ -168,16 +162,16 @@ public class Utils {
         }
     }
 
-    public static void showNotification(String message, NotificationType messageType) {
+    public static void showNotification(Project project, String message, NotificationType messageType) {
         int timeout = 2000;
         if(messageType != NotificationType.INFORMATION){
             timeout = 0;
         }
-        showNotification(message, messageType, timeout);
+        showNotification(project, message, messageType, timeout);
     }
 
-    public static void showNotification(String message) {
-        showNotification(message, NotificationType.INFORMATION, 2000);
+    public static void showNotification(Project project, String message) {
+        showNotification(project, message, NotificationType.INFORMATION, 2000);
     }
 }
 

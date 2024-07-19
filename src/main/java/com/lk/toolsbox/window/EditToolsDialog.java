@@ -65,14 +65,8 @@ public class EditToolsDialog extends DialogWrapper {
 
         // 将 JTable 放置在 JScrollPane 中
         JScrollPane scrollPane = new JBScrollPane(infoTable);
-
         contentPanel = new JPanel(new BorderLayout());
-
-        // fixme: 临时
-        JLabel pathLabel = new JLabel(PathManager.getConfigPath() + "/ToolsBoxPresets.json");
-
         contentPanel.add(scrollPane, BorderLayout.CENTER);
-        contentPanel.add(pathLabel, BorderLayout.SOUTH);
         return contentPanel;
     }
 
@@ -238,7 +232,6 @@ public class EditToolsDialog extends DialogWrapper {
 
             toolsBoxData.setTools(data);
             FilePersistence.saveData(toolsBoxData);
-            Utils.showNotification("保存成功！");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

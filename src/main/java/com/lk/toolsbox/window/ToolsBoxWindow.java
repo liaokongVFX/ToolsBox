@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 public class ToolsBoxWindow {
+    private final Project project;
     private JTextArea noteArea;
     private JPanel ToolsBoxPanel;
     private JPanel buttonPanel;
@@ -61,7 +62,7 @@ public class ToolsBoxWindow {
                         } else if (toolData.getType().equals("文件夹")) {
                             Utils.openDir(toolData.getContent());
                         } else if (toolData.getType().equals("cmd命令")) {
-                            Utils.openCmd(toolData.getContent());
+                            Utils.openCmd(toolData.getContent(), project);
                         }
                     }
                 });
@@ -79,6 +80,7 @@ public class ToolsBoxWindow {
     }
 
     public ToolsBoxWindow(Project project, ToolWindow toolWindow) {
+        this.project = project;
         init();
 
         addButton.addActionListener(new ActionListener() {
@@ -86,6 +88,7 @@ public class ToolsBoxWindow {
             public void actionPerformed(ActionEvent e) {
                 AddToolDialog addToolDialog = new AddToolDialog();
                 if(addToolDialog.showAndGet()){
+                    Utils.showNotification(project, "工具添加成功！");
                     loadTools();
                 }
             }
@@ -94,7 +97,7 @@ public class ToolsBoxWindow {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadTools();
-                Utils.showNotification("工具刷新成功！");
+                Utils.showNotification(project, "工具刷新成功！");
             }
         });
         editButton.addActionListener(new ActionListener() {
@@ -103,6 +106,7 @@ public class ToolsBoxWindow {
                 EditToolsDialog editToolDialog = new EditToolsDialog();
                 if(editToolDialog.showAndGet()){
                     loadTools();
+                    Utils.showNotification(project, "修改已成功保存！");
                 }
             }
         });
